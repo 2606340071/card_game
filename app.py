@@ -17,9 +17,32 @@ st.markdown("""
 
 st.title("🃏 Card Memory Game")
 
+# Difficulty Settings
+st.sidebar.title("⚙️ Settings")
+difficulty = st.sidebar.selectbox("Difficulty", ["Easy", "Medium", "Hard"], index=1)
+
+diff_settings = {
+    "Easy": 6,   # 12 cards
+    "Medium": 8, # 16 cards
+    "Hard": 12   # 24 cards
+}
+
+pairs_count = diff_settings[difficulty]
+cols_count = 4
+
+if 'current_difficulty' not in st.session_state:
+    st.session_state.current_difficulty = difficulty
+
+# Restart if difficulty changed
+if st.session_state.current_difficulty != difficulty:
+    st.session_state.current_difficulty = difficulty
+    if 'game' in st.session_state:
+        del st.session_state.game
+    st.rerun()
+
 # Initialize game in session state
 if 'game' not in st.session_state:
-    st.session_state.game = MemoryGame(pairs_count=8)
+    st.session_state.game = MemoryGame(pairs_count=pairs_count)
     st.session_state.previewing = True
     st.session_state.start_time = None
     st.session_state.final_time = None
@@ -48,11 +71,11 @@ st.markdown("---")
 if st.session_state.get('previewing', False):
     st.info("⏱️ 5초 동안 카드의 위치를 기억하세요!")
 
-# Draw the 4x4 grid
-cols = st.columns(4)
+# Draw the grid
+cols = st.columns(cols_count)
 
 for i, card in enumerate(game.cards):
-    col_idx = i % 4
+    col_idx = i % cols_count
     with cols[col_idx]:
         if st.session_state.get('previewing', False):
             # All cards face up during preview
@@ -94,7 +117,7 @@ if game.is_game_over() and not st.session_state.get('previewing', False):
 
 # Restart Button
 if st.button("🔄 Restart Game", use_container_width=True):
-    st.session_state.game = MemoryGame(pairs_count=8)
+    st.session_state.game = MemoryGame(pairs_count=pairs_count)
     st.session_state.previewing = True
     st.session_state.start_time = None
     st.session_state.final_time = None
